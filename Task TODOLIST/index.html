@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    
+    <style>
+        /* Basic Styling */
+        body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.todo-app {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 350px;
+  max-width: 100%;
+  transition: transform 0.3s ease;
+  font-family: cursive;
+}
+
+.todo-app:hover {
+  transform: scale(1.02);
+}
+
+h1 {
+  color: #22A5D5;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 24px;
+  margin: 0 0 55px;
+}
+
+input[type="text"] {
+  width: calc(100% - 110px);
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  font-family: cursive;
+}
+
+input[type="text"]:focus {
+  border-color: #4FDBFF;
+  outline: none;
+}
+
+button {
+  background-color: #4FDBFF;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-family: cursive;
+  margin: 0 8px 0;
+}
+
+button:hover {
+  background-color: #22A5D5;
+  transform: scale(1.05);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.3s ease;
+}
+
+li:hover {
+  background-color: #f9f9f9;
+}
+
+li span {
+  flex: 1;
+}
+
+.filters {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.filter-btn {
+  background-color: #ddd;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.filter-btn.active {
+  background-color: #22A5D5;
+  color: white;
+}
+
+.filter-btn:hover {
+  background-color: #4FDBFF;
+  color: white;
+}
+
+/* Animation for tasks */
+.fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+button.delete-btn {
+  margin-right: 10px; /* Adjust the space between the buttons here */
+}
+.img{
+
+margin:  0 0 -40px;
+}
+    </style>
+</head>
+
+<body>
+    <!-- Html for todo list app -->
+   
+    <div class="todo-app">
+        <h1>To-Do List <img src="./images/icon.png"  class="img"></h1>
+        <input type="text" id="new-task" placeholder="Add a new task..." />
+        <button id="add-task">Add Task</button>
+    
+        <ul id="task-list"></ul>
+    
+        <div class="filters">
+            <button data-filter="all" class="filter-btn active">All</button>
+            <button data-filter="active" class="filter-btn">Active</button>
+            <button data-filter="completed" class="filter-btn">Completed</button>
+        </div>
+    </div>
+
+
+       
+     
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+            const taskInput = document.getElementById("new-task");
+            const taskList = document.getElementById("task-list");
+            const filterButtons = document.querySelectorAll(".filter-btn");
+            let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+
+
+            //  saveAndRender(function)  to handle both saving tasks to local storage and rendering them on the page
+            const saveAndRender = (filter = "all") => {
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+
+                // Render the filtered task list
+                taskList.innerHTML = tasks
+                    .filter(t => filter === "all" || (filter === "active" && !t.completed) || (filter === "completed" && t.completed))
+                    .map((t, i) => `
+        <li>
+
+
+          <span>${i + 1}. ${t.completed ? `<s>${t.name}</s>` : t.name}</span>   
+          <button data-action="delete" data-index="${i}">Delete</button>
+          <button data-action="toggle" data-index="${i}">${t.completed ? 'Unmark' : 'Complete'}</button>
+        </li>`).join('');
+            };
+
+            ///
+        document.getElementById("add-task").onclick = () => {
+            const name = taskInput.value.trim();
+            if (!name) return alert("Please enter a task.");
+            tasks.push({ name, completed: false });
+            taskInput.value = "";
+            saveAndRender();
+        };
+//event handler for clicks on the task list
+  
+
+            taskList.onclick = e => {
+                const { action, index } = e.target.dataset;
+                // splice is used to remove, replace or insert items starting at a chosen indexalso add new  elements
+                if (action === "delete") tasks.splice(index, 1);  
+                if (action === "toggle") tasks[index].completed = !tasks[index].completed;
+                saveAndRender(document.querySelector(".filter-btn.active").dataset.filter);
+            };
+
+            
+
+            filterButtons.forEach(btn => btn.onclick = () => {
+                document.querySelector(".filter-btn.active").classList.remove("active");
+                btn.classList.add("active");
+                saveAndRender(btn.dataset.filter);
+            });
+
+            saveAndRender();
+        });
+
+</script>
+</html>
